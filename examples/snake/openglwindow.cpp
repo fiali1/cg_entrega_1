@@ -8,6 +8,22 @@
 
 #include "abcg.hpp"
 
+void OpenGLWindow::handleEvent(SDL_Event &event) {
+    // Keyboard events
+    if (event.type == SDL_KEYDOWN && inputBuffer) {
+        if (event.key.keysym.sym == SDLK_UP && direction != 1)
+            direction = 3;
+        if (event.key.keysym.sym == SDLK_LEFT && direction != 0)
+            direction = 2;
+        if (event.key.keysym.sym == SDLK_DOWN && direction != 3)
+            direction = 1;
+        if (event.key.keysym.sym == SDLK_RIGHT && direction != 2)
+            direction = 0;
+        
+        inputBuffer = false;
+    }
+}
+
 void OpenGLWindow::initializeGL() {
     const auto *vertexShader{R"gl(
         #version 410
@@ -48,18 +64,40 @@ void OpenGLWindow::initializeGL() {
     auto seed{std::chrono::steady_clock::now().time_since_epoch().count()};
     m_randomEngine.seed(seed);
 
-    // Initialize matrix board for player positioning
-    std::vector<std::vector<int> > boardMatrix(size, std::vector<int>(size, int()));
+    playerI = {2, 2, 2, 2, 2};
+    playerJ = {6, 5, 4, 3, 2};
+}
 
-    for (int i = 0; i < 25; i++) {
-        boardMatrix[i].resize(25);
+void OpenGLWindow::positionUpdate() {
+    int increment = -1;
+
+    if (direction == 0 || direction == 1)
+        increment = 1;
+
+    for (int i = playerSize - 1; i > 0; i--) {
+        playerJ[i] = playerJ[i - 1];
+        playerI[i] = playerI[i - 1];
     }
 
-    for (int i = 0; i < 25; i++) {
-        for (int j = 0; j < 25; j++) {
-            boardMatrix[i][j] = 0;
-        }
-    }
+    if (direction == 0 || direction == 2) {
+        playerJ[0] = (playerJ[0] + increment) % 25;
+        if (playerJ[0] == -1)
+            playerJ[0] = 24;    
+    } else if (direction == 1 || direction == 3) {
+        playerI[0] = (playerI[0] + increment) % 25;
+        if (playerI[0] == -1)
+            playerI[0] = 24;    
+    }   
+
+    inputBuffer = true;
+}
+
+bool OpenGLWindow::checkPosition(int i, int j) {
+    for (int k = 0; k < playerSize; k++)
+        if (playerI[k] == i && playerJ[k] == j)
+            return true;  
+
+    return false;
 }
 
 void OpenGLWindow::paintGL() {
@@ -67,12 +105,18 @@ void OpenGLWindow::paintGL() {
     if (m_elapsedTimer.elapsed() < m_delay / 1000.0) return;
     m_elapsedTimer.restart();
 
+    int sides = 4;
+
+    positionUpdate();
+
     for (int i = 0; i < 25; i++) {
         for (int j = 0; j < 25; j++) {
             // Create a regular polygon
-            int sides = 4;
 
-            setupModel(glm::vec3 {1.0f, 1.0f, 1.0f});
+            if (checkPosition(i, j))
+                setupModel(glm::vec3 {0.3f, 0.3f, 0.3f});
+            else
+                setupModel(glm::vec3 {1.0f, 1.0f, 1.0f});
 
             glViewport(0, 0, m_viewportWidth, m_viewportHeight);
 
@@ -81,8 +125,7 @@ void OpenGLWindow::paintGL() {
             glm::vec2 translation{basePositionX + j * 0.075f, basePositionY - i * 0.075f};
             GLint translationLocation{glGetUniformLocation(m_program, "translation")};
             glUniform2fv(translationLocation, 1, &translation.x);
-
-            // Choose a random scale factor (1% to 25%)
+        
             auto scale{0.05f};
             GLint scaleLocation{glGetUniformLocation(m_program, "scale")};
             glUniform1f(scaleLocation, scale);
@@ -90,15 +133,15 @@ void OpenGLWindow::paintGL() {
             // Render
             glBindVertexArray(m_vao);
             glDrawArrays(GL_TRIANGLE_FAN, 0, sides + 2);
-            glBindVertexArray(0);
-
-            glUseProgram(0);
+            glBindVertexArray(0);   
         }
+
     }
+    glUseProgram(0);
 }
 
 void OpenGLWindow::paintUI() {
-  
+  abcg::OpenGLWindow::paintUI();
 
 
 }

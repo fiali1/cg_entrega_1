@@ -13,7 +13,7 @@ int main(int argc, char **argv) {
     window->setOpenGLSettings(
         {.samples = 2, .vsync = true, .preserveWebGLDrawingBuffer = true});
     window->setWindowSettings(
-        {.width = 600, .height = 600, .title = "Snake"});
+        {.width = 800, .height = 800, .showFullscreenButton = false, .title = "Snake"});
 
     // Run application
     app.run(window);

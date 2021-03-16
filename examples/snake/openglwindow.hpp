@@ -29,9 +29,17 @@ class OpenGLWindow : public abcg::OpenGLWindow {
     float baseScale = 0.1f;
 
     int size{25};
-    std::vector<std::vector<int>> boardMatrix;
+    int playerSize{5};
+    int direction{0};
+    bool inputBuffer{true};
+    void handleEvent(SDL_Event& event) override;
 
-    int m_delay{500};
+    std::vector<int> playerI;
+    std::vector<int> playerJ;
+    void positionUpdate();
+    bool checkPosition(int i, int j);
+
+    int m_delay{100};
     abcg::ElapsedTimer m_elapsedTimer;
 
     void setupModel(glm::vec3 color);
