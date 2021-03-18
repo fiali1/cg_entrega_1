@@ -24,20 +24,25 @@ class OpenGLWindow : public abcg::OpenGLWindow {
 
     std::default_random_engine m_randomEngine;
 
-    float basePositionX = -0.9f;
-    float basePositionY = +0.9f;
+    float basePositionX = -0.7f;
+    float basePositionY = +0.75f;
     float baseScale = 0.1f;
 
     int size{25};
-    int playerSize{5};
+    int playerSize{3};
     int direction{0};
     bool inputBuffer{true};
     void handleEvent(SDL_Event& event) override;
+
+    int score{0};
+    bool end{true};
 
     std::vector<int> playerI;
     std::vector<int> playerJ;
     void positionUpdate();
     bool checkPosition(int i, int j);
+    void gameOver();
+    void restart();
 
     int m_delay{100};
     abcg::ElapsedTimer m_elapsedTimer;

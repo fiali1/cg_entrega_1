@@ -64,8 +64,43 @@ void OpenGLWindow::initializeGL() {
     auto seed{std::chrono::steady_clock::now().time_since_epoch().count()};
     m_randomEngine.seed(seed);
 
-    playerI = {2, 2, 2, 2, 2};
-    playerJ = {6, 5, 4, 3, 2};
+    playerSize = 3;
+    playerI = {2, 2, 2};
+    playerJ = {6, 5, 4};
+
+}
+
+void OpenGLWindow::gameOver() {
+    playerI = {
+        5, 5, 5, 5, 6, 7, 8, 9, 10, 10, 10, 10, 9, 8, 8, 
+        10, 9, 8, 7, 6, 5, 5, 5, 5, 6, 7, 8, 9, 10, 8, 8, 
+        10, 9, 8, 7, 6, 5, 6, 6, 5, 6, 7, 8, 9, 10, 
+        10, 9, 8, 7, 6, 5, 5, 5, 5, 8, 8, 8, 10, 10, 10, 
+        13, 13, 13, 13, 14, 15, 16, 17, 18, 18, 18, 18, 17, 16, 15, 14, 13, 
+        13, 14, 15, 16, 17, 18, 18, 17, 16, 15, 14, 13, 
+        18, 17, 16, 15, 14, 13, 13, 13, 13, 16, 16, 16, 18, 18, 18, 
+        18, 17, 16, 15, 14, 13, 13, 13, 13, 14, 15, 16, 16, 16, 17, 18
+    };
+    playerJ = {
+        6, 5, 4, 3, 3, 3, 3, 3, 3, 4, 5, 6, 6, 6, 5, 
+        8, 8, 8, 8, 8, 8, 9, 10, 11, 11, 11, 11, 11, 11, 9, 10, 
+        13, 13, 13, 13, 13, 13, 14, 15, 16, 16, 16, 16, 16, 16, 
+        18, 18, 18, 18, 18, 18, 19, 20, 21, 19, 20, 21, 19, 20, 21,
+        6, 5, 4, 3, 3, 3, 3, 3, 3, 4, 5, 6, 6, 6, 6, 6, 6,
+        8, 8, 8, 8, 8, 9, 10, 11, 11, 11, 11, 11,
+        13, 13, 13, 13, 13, 13, 14, 15, 16, 14, 15, 16, 14, 15, 16,
+        18, 18, 18, 18, 18, 18, 19, 20, 21, 21, 21, 21, 20, 19, 20, 21
+    };
+
+    playerSize = playerI.size();
+}
+
+void OpenGLWindow::restart() {
+    playerSize = 3;
+    playerI = {2, 2, 2};
+    playerJ = {6, 5, 4};
+
+    end = false;
 }
 
 void OpenGLWindow::positionUpdate() {
@@ -104,15 +139,17 @@ void OpenGLWindow::paintGL() {
     // Check whether to render the next polygon
     if (m_elapsedTimer.elapsed() < m_delay / 1000.0) return;
     m_elapsedTimer.restart();
-
+    
     int sides = 4;
 
-    positionUpdate();
+    if (!end)
+        positionUpdate();
+    else
+        gameOver();
 
     for (int i = 0; i < 25; i++) {
         for (int j = 0; j < 25; j++) {
-            // Create a regular polygon
-
+            // Set square model based on color
             if (checkPosition(i, j))
                 setupModel(glm::vec3 {0.3f, 0.3f, 0.3f});
             else
@@ -122,11 +159,13 @@ void OpenGLWindow::paintGL() {
 
             glUseProgram(m_program);
 
-            glm::vec2 translation{basePositionX + j * 0.075f, basePositionY - i * 0.075f};
+            // Set square position
+            glm::vec2 translation{basePositionX + j * 0.065f, basePositionY - i * 0.065f};
             GLint translationLocation{glGetUniformLocation(m_program, "translation")};
             glUniform2fv(translationLocation, 1, &translation.x);
         
-            auto scale{0.05f};
+            // Scale square
+            auto scale{0.04f};
             GLint scaleLocation{glGetUniformLocation(m_program, "scale")};
             glUniform1f(scaleLocation, scale);
 
@@ -135,15 +174,37 @@ void OpenGLWindow::paintGL() {
             glDrawArrays(GL_TRIANGLE_FAN, 0, sides + 2);
             glBindVertexArray(0);   
         }
-
     }
     glUseProgram(0);
 }
 
 void OpenGLWindow::paintUI() {
-  abcg::OpenGLWindow::paintUI();
+    abcg::OpenGLWindow::paintUI();
 
+    static bool firstTime{true};
+    if (firstTime) {
+      ImGui::SetNextWindowPos(ImVec2(5, 75));
+      firstTime = false;
+    }
 
+    ImGuiWindowFlags flags{
+        ImGuiWindowFlags_NoBackground |
+        ImGuiWindowFlags_NoTitleBar | 
+        ImGuiWindowFlags_NoResize
+    };
+
+    ImGui::Begin(" ", nullptr, flags);
+        ImGui::Text("Score: %d", score);
+
+        if (end) {
+            ImGui::Button("Retry", ImVec2(-1, 50));
+            if (ImGui::IsItemClicked())
+                restart();
+        } else {
+            ImGui::Button("", ImVec2(-1, 50));
+        }
+
+    ImGui::End();
 }
 
 void OpenGLWindow::resizeGL(int width, int height) {
