@@ -140,6 +140,8 @@ void OpenGLWindow::paintGL() {
     if (m_elapsedTimer.elapsed() < m_delay / 1000.0) return;
     m_elapsedTimer.restart();
     
+    glClear(GL_COLOR_BUFFER_BIT);
+        
     int sides = 4;
 
     if (!end)
@@ -173,9 +175,9 @@ void OpenGLWindow::paintGL() {
             glBindVertexArray(m_vao);
             glDrawArrays(GL_TRIANGLE_FAN, 0, sides + 2);
             glBindVertexArray(0);   
+            glUseProgram(0);
         }
     }
-    glUseProgram(0);
 }
 
 void OpenGLWindow::paintUI() {
@@ -184,6 +186,7 @@ void OpenGLWindow::paintUI() {
     static bool firstTime{true};
     if (firstTime) {
       ImGui::SetNextWindowPos(ImVec2(5, 75));
+      ImGui::SetNextWindowSize(ImVec2(100, 200));
       firstTime = false;
     }
 
@@ -200,8 +203,6 @@ void OpenGLWindow::paintUI() {
             ImGui::Button("Retry", ImVec2(-1, 50));
             if (ImGui::IsItemClicked())
                 restart();
-        } else {
-            ImGui::Button("", ImVec2(-1, 50));
         }
 
     ImGui::End();
