@@ -35,7 +35,7 @@ class OpenGLWindow : public abcg::OpenGLWindow {
     void handleEvent(SDL_Event& event) override;
 
     int score{0};
-    bool end{true};
+    bool end{false};
 
     std::vector<int> playerI;
     std::vector<int> playerJ;

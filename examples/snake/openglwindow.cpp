@@ -71,6 +71,7 @@ void OpenGLWindow::initializeGL() {
 }
 
 void OpenGLWindow::gameOver() {
+    // Game Over Message
     playerI = {
         5, 5, 5, 5, 6, 7, 8, 9, 10, 10, 10, 10, 9, 8, 8, 
         10, 9, 8, 7, 6, 5, 5, 5, 5, 6, 7, 8, 9, 10, 8, 8, 
@@ -93,6 +94,8 @@ void OpenGLWindow::gameOver() {
     };
 
     playerSize = playerI.size();
+
+    end = true;
 }
 
 void OpenGLWindow::restart() {
@@ -101,6 +104,15 @@ void OpenGLWindow::restart() {
     playerJ = {6, 5, 4};
 
     end = false;
+}
+
+bool checkCollision(std::vector<int> playerI, std::vector<int> playerJ, int playerSize) {
+    for (int i = 0; i < playerSize - 1; i++) 
+        for (int j = i + 1; j < playerSize; j++) 
+            if (playerI[i] == playerI[j] && playerJ[i] == playerJ[j])
+                return true;
+
+    return false;
 }
 
 void OpenGLWindow::positionUpdate() {
@@ -124,6 +136,9 @@ void OpenGLWindow::positionUpdate() {
             playerI[0] = 24;    
     }   
 
+    if (checkCollision(playerI, playerJ, playerSize) && !end)
+        gameOver();
+
     inputBuffer = true;
 }
 
@@ -146,8 +161,6 @@ void OpenGLWindow::paintGL() {
 
     if (!end)
         positionUpdate();
-    else
-        gameOver();
 
     for (int i = 0; i < 25; i++) {
         for (int j = 0; j < 25; j++) {
@@ -182,30 +195,33 @@ void OpenGLWindow::paintGL() {
 
 void OpenGLWindow::paintUI() {
     abcg::OpenGLWindow::paintUI();
+    
+    {
+        ImGui::SetNextWindowPos(ImVec2(5, 87));
 
-    static bool firstTime{true};
-    if (firstTime) {
-      ImGui::SetNextWindowPos(ImVec2(5, 75));
-      ImGui::SetNextWindowSize(ImVec2(100, 200));
-      firstTime = false;
+        auto size = ImVec2(100, 90);
+        auto size2 = ImVec2(100, 30);
+        if (end)
+            ImGui::SetNextWindowSize(size);
+        else
+            ImGui::SetNextWindowSize(size2);
+
+        ImGuiWindowFlags flags{
+            ImGuiWindowFlags_NoTitleBar | 
+            ImGuiWindowFlags_NoResize
+        };
+
+        ImGui::Begin(" ", nullptr, flags);
+            ImGui::Text("Score: %d", score);
+
+            if (end) {
+                ImGui::Button("Retry", ImVec2(-1, 50));
+                if (ImGui::IsItemClicked())
+                    restart();
+            }
+
+        ImGui::End();
     }
-
-    ImGuiWindowFlags flags{
-        ImGuiWindowFlags_NoBackground |
-        ImGuiWindowFlags_NoTitleBar | 
-        ImGuiWindowFlags_NoResize
-    };
-
-    ImGui::Begin(" ", nullptr, flags);
-        ImGui::Text("Score: %d", score);
-
-        if (end) {
-            ImGui::Button("Retry", ImVec2(-1, 50));
-            if (ImGui::IsItemClicked())
-                restart();
-        }
-
-    ImGui::End();
 }
 
 void OpenGLWindow::resizeGL(int width, int height) {
