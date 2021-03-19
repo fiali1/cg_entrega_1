@@ -100,11 +100,11 @@ void OpenGLWindow::gameOver() {
 }
 
 void OpenGLWindow::restart() {
-    playerSize = 3;
-    playerI = {2, 2, 2};
-    playerJ = {6, 5, 4};
-    applePositionX = 10;
-    applePositionY = 12;
+    playerSize = 4;
+    playerI = {2, 2, 2, 2};
+    playerJ = {6, 5, 4, 3};
+    updateApplePosition();
+    direction = 0;
 
     end = false;
 }
@@ -135,8 +135,16 @@ void OpenGLWindow::positionUpdate() {
 
 void OpenGLWindow::updateApplePosition() {
     std::uniform_int_distribution<int> rd(0, 24);
-    applePositionX = rd(m_randomEngine);
-    applePositionY = rd(m_randomEngine);
+    int tempApplePositionX = rd(m_randomEngine);
+    int tempApplePositionY = rd(m_randomEngine);
+
+    if(checkPosition(tempApplePositionX, tempApplePositionY)) {
+        printf("Apple appeared under snake, repositioning!\n");
+        return updateApplePosition();
+    }
+
+    applePositionX = tempApplePositionX;
+    applePositionY = tempApplePositionY;
 }
 
 bool OpenGLWindow::checkPosition(int i, int j) {
@@ -161,18 +169,35 @@ bool OpenGLWindow::collidedWithApple() {
     return playerI[0] == applePositionX && playerJ[0] == applePositionY;
 }
 
+bool OpenGLWindow::collidedWithSelf() {
+    for (int k = 0; k < playerSize; k++) {
+        for (int l = 0; l < playerSize; l++) {
+            if(k != l) {
+                if(playerI[l] == playerI[k] && playerJ[l] == playerJ[k]) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
 void OpenGLWindow::paintGL() {
     // Check whether to render the next polygon
     if (m_elapsedTimer.elapsed() < m_delay / 1000.0) return;
     m_elapsedTimer.restart();
     
-    glClear(GL_COLOR_BUFFER_BIT);
+    // glClear(GL_COLOR_BUFFER_BIT);
         
     int sides = 4;
 
     if (!end) {
-        
-        if(collidedWithApple()) {
+
+        if(collidedWithSelf()) {
+            end = true;
+            gameOver();
+        } else if(collidedWithApple()) {
             // printf("Apple eaten");
             playerSize++;
             score++;
@@ -195,7 +220,7 @@ void OpenGLWindow::paintGL() {
             // Set square model based on color
             if (checkPosition(i, j))
                 setupModel(glm::vec3 {0.3f, 0.3f, 0.3f});
-            else if (checkApplePosition(i, j))
+            else if (checkApplePosition(i, j) && !end)
                 setupModel(glm::vec3 {1.0f, 0.0f, 0.0f});
             else
                 setupModel(glm::vec3 {1.0f, 1.0f, 1.0f});
@@ -241,7 +266,7 @@ void OpenGLWindow::paintUI() {
     };
 
     ImGui::Begin(" ", nullptr, flags);
-        printf("Score: %d\n", score);
+        // printf("Score: %d\n", score);
         ImGui::Text("%d", score);
 
         if (end) {

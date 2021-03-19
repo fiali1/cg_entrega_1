@@ -46,6 +46,7 @@ class OpenGLWindow : public abcg::OpenGLWindow {
     bool checkApplePosition(int x, int y);
     bool collidedWithApple();
     void updateApplePosition();
+    bool collidedWithSelf();
     void gameOver();
     void restart();
 
