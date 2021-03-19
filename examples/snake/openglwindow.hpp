@@ -41,6 +41,11 @@ class OpenGLWindow : public abcg::OpenGLWindow {
     std::vector<int> playerJ;
     void positionUpdate();
     bool checkPosition(int i, int j);
+    int applePositionX;
+    int applePositionY;
+    bool checkApplePosition(int x, int y);
+    bool collidedWithApple();
+    void updateApplePosition();
     void gameOver();
     void restart();
 

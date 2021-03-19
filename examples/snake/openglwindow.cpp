@@ -5,6 +5,8 @@
 #include <imgui.h>
 
 #include <cppitertools/itertools.hpp>
+#include <cstdio>
+#include <random>
 
 #include "abcg.hpp"
 
@@ -67,6 +69,8 @@ void OpenGLWindow::initializeGL() {
     playerSize = 3;
     playerI = {2, 2, 2};
     playerJ = {6, 5, 4};
+    applePositionX = 10;
+    applePositionY = 12;
 
 }
 
@@ -99,6 +103,8 @@ void OpenGLWindow::restart() {
     playerSize = 3;
     playerI = {2, 2, 2};
     playerJ = {6, 5, 4};
+    applePositionX = 10;
+    applePositionY = 12;
 
     end = false;
 }
@@ -127,12 +133,32 @@ void OpenGLWindow::positionUpdate() {
     inputBuffer = true;
 }
 
+void OpenGLWindow::updateApplePosition() {
+    std::uniform_int_distribution<int> rd(0, 24);
+    applePositionX = rd(m_randomEngine);
+    applePositionY = rd(m_randomEngine);
+}
+
 bool OpenGLWindow::checkPosition(int i, int j) {
     for (int k = 0; k < playerSize; k++)
         if (playerI[k] == i && playerJ[k] == j)
             return true;  
 
     return false;
+}
+
+bool OpenGLWindow::checkApplePosition(int x, int y) {
+    return x == applePositionX && y == applePositionY;
+}
+
+bool OpenGLWindow::collidedWithApple() {
+
+
+    // printf("Apple: %d, %d\n", applePositionX, applePositionY);
+    // printf("Player: %d, %d\n", playerI[0], playerJ[0]);
+
+
+    return playerI[0] == applePositionX && playerJ[0] == applePositionY;
 }
 
 void OpenGLWindow::paintGL() {
@@ -144,16 +170,33 @@ void OpenGLWindow::paintGL() {
         
     int sides = 4;
 
-    if (!end)
+    if (!end) {
+        
+        if(collidedWithApple()) {
+            // printf("Apple eaten");
+            playerSize++;
+            score++;
+            // paintUI();
+            // printf("Player: %d, %d\n", playerI[playerSize - 1], playerJ[playerSize - 1]);
+            // printf("Player: %d, %d\n", playerI[playerSize - 2], playerJ[playerSize - 2]);
+            // printf("Player: %d, %d\n", playerI[playerSize - 3], playerJ[playerSize - 3]);
+            updateApplePosition();
+            
+        }
         positionUpdate();
-    else
+        // printf("Score: %d\n", score);
+    } else {
         gameOver();
+    }
+        
 
     for (int i = 0; i < 25; i++) {
         for (int j = 0; j < 25; j++) {
             // Set square model based on color
             if (checkPosition(i, j))
                 setupModel(glm::vec3 {0.3f, 0.3f, 0.3f});
+            else if (checkApplePosition(i, j))
+                setupModel(glm::vec3 {1.0f, 0.0f, 0.0f});
             else
                 setupModel(glm::vec3 {1.0f, 1.0f, 1.0f});
 
@@ -183,6 +226,7 @@ void OpenGLWindow::paintGL() {
 void OpenGLWindow::paintUI() {
     abcg::OpenGLWindow::paintUI();
 
+    {
     static bool firstTime{true};
     if (firstTime) {
       ImGui::SetNextWindowPos(ImVec2(5, 75));
@@ -197,7 +241,8 @@ void OpenGLWindow::paintUI() {
     };
 
     ImGui::Begin(" ", nullptr, flags);
-        ImGui::Text("Score: %d", score);
+        printf("Score: %d\n", score);
+        ImGui::Text("%d", score);
 
         if (end) {
             ImGui::Button("Retry", ImVec2(-1, 50));
@@ -206,6 +251,7 @@ void OpenGLWindow::paintUI() {
         }
 
     ImGui::End();
+    }
 }
 
 void OpenGLWindow::resizeGL(int width, int height) {
