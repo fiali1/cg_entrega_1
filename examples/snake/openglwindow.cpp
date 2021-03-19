@@ -266,7 +266,6 @@ void OpenGLWindow::paintUI() {
     };
 
     ImGui::Begin(" ", nullptr, flags);
-        // printf("Score: %d\n", score);
         ImGui::Text("%d", score);
 
         if (end) {
