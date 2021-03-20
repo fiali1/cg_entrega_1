@@ -68,6 +68,7 @@ void OpenGLWindow::initializeGL() {
     playerI = {2, 2, 2};
     playerJ = {6, 5, 4};
 
+    updateApplePosition();
 }
 
 void OpenGLWindow::gameOver() {
@@ -102,6 +103,8 @@ void OpenGLWindow::restart() {
     playerSize = 3;
     playerI = {2, 2, 2};
     playerJ = {6, 5, 4};
+    score = 0;
+    direction = 0;
 
     end = false;
 }
@@ -117,6 +120,14 @@ bool checkCollision(std::vector<int> playerI, std::vector<int> playerJ, int play
 
 void OpenGLWindow::positionUpdate() {
     int increment = -1;
+
+    if (collidedWithApple() && !end) {
+        playerSize++;
+        playerI.push_back(applePositionX);
+        playerJ.push_back(applePositionY);
+        score += 1;
+        updateApplePosition();
+    }
 
     if (direction == 0 || direction == 1)
         increment = 1;
@@ -142,6 +153,32 @@ void OpenGLWindow::positionUpdate() {
     inputBuffer = true;
 }
 
+bool OpenGLWindow::checkApplePosition(int x, int y) {
+    return x == applePositionX && y == applePositionY;
+}
+
+bool OpenGLWindow::collidedWithApple() {
+    // printf("Apple: %d, %d\n", applePositionX, applePositionY);
+    // printf("Player: %d, %d\n", playerI[0], playerJ[0]);
+
+    return playerI[0] == applePositionX && playerJ[0] == applePositionY;
+}
+
+
+void OpenGLWindow::updateApplePosition() {
+    std::uniform_int_distribution<int> rd(0, 24);
+    int tempApplePositionX = rd(m_randomEngine);
+    int tempApplePositionY = rd(m_randomEngine);
+
+    if(checkPosition(tempApplePositionX, tempApplePositionY)) {
+        printf("Apple appeared under snake, repositioning!\n");
+        return updateApplePosition();
+    }
+
+    applePositionX = tempApplePositionX;
+    applePositionY = tempApplePositionY;
+}
+
 bool OpenGLWindow::checkPosition(int i, int j) {
     for (int k = 0; k < playerSize; k++)
         if (playerI[k] == i && playerJ[k] == j)
@@ -150,9 +187,18 @@ bool OpenGLWindow::checkPosition(int i, int j) {
     return false;
 }
 
+int delayCalc(int m_delay, int score) {
+    int value = m_delay - score;
+
+    if (value < 50)
+        value = 50;
+
+    return value;
+}
+
 void OpenGLWindow::paintGL() {
     // Check whether to render the next polygon
-    if (m_elapsedTimer.elapsed() < m_delay / 1000.0) return;
+    if (m_elapsedTimer.elapsed() < delayCalc(m_delay, score) / 1000.0) return;
     m_elapsedTimer.restart();
     
     glClear(GL_COLOR_BUFFER_BIT);
@@ -167,6 +213,8 @@ void OpenGLWindow::paintGL() {
             // Set square model based on color
             if (checkPosition(i, j))
                 setupModel(glm::vec3 {0.3f, 0.3f, 0.3f});
+            else if (checkApplePosition(i, j) && !end)
+                setupModel(glm::vec3 {1.0f, 0.0f, 0.0f});
             else
                 setupModel(glm::vec3 {1.0f, 1.0f, 1.0f});
 

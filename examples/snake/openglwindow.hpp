@@ -12,6 +12,7 @@ class OpenGLWindow : public abcg::OpenGLWindow {
     void paintUI() override;
     void resizeGL(int width, int height) override;
     void terminateGL() override;
+    void handleEvent(SDL_Event& event) override;
 
     private:
     GLuint m_vao{};
@@ -32,7 +33,6 @@ class OpenGLWindow : public abcg::OpenGLWindow {
     int playerSize{3};
     int direction{0};
     bool inputBuffer{true};
-    void handleEvent(SDL_Event& event) override;
 
     int score{0};
     bool end{false};
@@ -41,6 +41,11 @@ class OpenGLWindow : public abcg::OpenGLWindow {
     std::vector<int> playerJ;
     void positionUpdate();
     bool checkPosition(int i, int j);
+    int applePositionX;
+    int applePositionY;
+    void updateApplePosition();
+    bool checkApplePosition(int x, int y);
+    bool collidedWithApple();
     void gameOver();
     void restart();
 
