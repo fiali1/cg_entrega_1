@@ -4,6 +4,8 @@ Primeira etapa de entrega do projeto da disciplina de Computação Gráfica, min
 
 Implementação do jogo clássico Snake, com tela infinita e placar de coletas.
 
+Para acessar o jogo, [clique aqui](https://fiali1.github.io/cg_entrega_1/snake/).
+
 ### Integrantes:
 * Gabriel de Mello Fiali - 11201721286
 * Rodrigo Rominho Mayer - 11020716
