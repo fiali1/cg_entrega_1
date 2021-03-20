@@ -4,12 +4,14 @@ Primeira etapa de entrega do projeto da disciplina de Computação Gráfica, min
 
 Implementação do jogo clássico Snake, com tela infinita e placar de coletas.
 
-<strong>Integrantes:</strong>
+### Integrantes:
 * Gabriel de Mello Fiali - 11201721286
 * Rodrigo Rominho Mayer - 11020716
 
-<br/>
-<hr></hr>
+### Observações
+É necessário clicar no tabuleiro para mover a cobra.
+
+<hr>
 
 ## <strong>ABCg</strong>
 
