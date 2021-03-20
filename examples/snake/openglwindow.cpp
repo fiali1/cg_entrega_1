@@ -158,9 +158,6 @@ bool OpenGLWindow::checkApplePosition(int x, int y) {
 }
 
 bool OpenGLWindow::collidedWithApple() {
-    // printf("Apple: %d, %d\n", applePositionX, applePositionY);
-    // printf("Player: %d, %d\n", playerI[0], playerJ[0]);
-
     return playerI[0] == applePositionX && playerJ[0] == applePositionY;
 }
 
@@ -171,7 +168,6 @@ void OpenGLWindow::updateApplePosition() {
     int tempApplePositionY = rd(m_randomEngine);
 
     if(checkPosition(tempApplePositionX, tempApplePositionY)) {
-        printf("Apple appeared under snake, repositioning!\n");
         return updateApplePosition();
     }
 
@@ -223,12 +219,12 @@ void OpenGLWindow::paintGL() {
             glUseProgram(m_program);
 
             // Set square position
-            glm::vec2 translation{basePositionX + j * 0.065f, basePositionY - i * 0.065f};
+            glm::vec2 translation{basePositionX + j * 0.05f, basePositionY - i * 0.05f};
             GLint translationLocation{glGetUniformLocation(m_program, "translation")};
             glUniform2fv(translationLocation, 1, &translation.x);
         
             // Scale square
-            auto scale{0.04f};
+            auto scale{0.03f};
             GLint scaleLocation{glGetUniformLocation(m_program, "scale")};
             glUniform1f(scaleLocation, scale);
 

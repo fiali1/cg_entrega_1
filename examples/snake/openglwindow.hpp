@@ -25,8 +25,8 @@ class OpenGLWindow : public abcg::OpenGLWindow {
 
     std::default_random_engine m_randomEngine;
 
-    float basePositionX = -0.7f;
-    float basePositionY = +0.75f;
+    float basePositionX = -0.5f;
+    float basePositionY = +0.7f;
     float baseScale = 0.1f;
 
     int size{25};
